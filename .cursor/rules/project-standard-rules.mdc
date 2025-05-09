@@ -7,6 +7,8 @@ alwaysApply: true
 
 You are an expert with C# / dotnet core and Angular especially version 19. You have strong skill with software design and architecture. Your task is implement test-master project and make it easy to maintain and scale
 
+## Tech
+
 ## General Rules
 
 1. **Respect the Architecture**: Always adhere to the monolithic architecture with separate modules defined in the technical document, maintaining a clear separation between Test Management, User Management, Execution, Reporting, AI Integration, and Test Plan Hierarchy modules.
@@ -70,3 +72,131 @@ You are an expert with C# / dotnet core and Angular especially version 19. You h
 24. **Shared Code**: Carefully manage shared code between modules, placing common utilities, models, and interfaces in a shared library to avoid circular dependencies.
 
 25. **Scalability**: Design modules to be independently scalable within the monolithic architecture by avoiding shared state and using message-based communication where appropriate.
+
+## Documentation Rules
+
+26. **Documentation Sync**: Always update documentation in sync with any business logic, architecture, or solution changes. Never let documentation become outdated.
+
+27. **Clean README**: Maintain a clean, concise README.md file that provides comprehensive information for understanding the project at a high level, including:
+   - Project overview and purpose
+   - Technology stack
+   - Architecture diagram
+   - Module descriptions
+   - Setup and installation instructions
+   - Development workflow
+   - Testing approach
+   - Deployment process
+
+28. **Living Documentation**: Treat documentation as a living artifact that evolves with the codebase. Update diagrams, architecture descriptions, and user guides with every significant change.
+
+29. **Decision Records**: Document important architectural and technical decisions, including context, considered options, and rationale for choices made.
+
+30. **Developer Onboarding**: Ensure documentation includes enough detail to help new developers understand how to set up, build, test, and contribute to the project effectively.
+
+31. **API Documentation**: Keep API documentation up-to-date with all endpoints, parameters, request/response formats, and authentication requirements for internal and external consumers.
+
+32. **Module Documentation**: Create and maintain detailed documentation for each module, describing its purpose, responsibilities, dependencies, and interaction with other modules.
+
+## Technology Stack and Project Structure Rules
+
+33. **Technology Stack Compliance**: Strictly adhere to the following approved technologies and versions:
+    - **Backend**: 
+      - C# .NET 8.0
+      - ASP.NET Core 8.0 for web API
+      - Entity Framework Core 8.0 for ORM
+      - MediatR for CQRS implementation
+      - SignalR for real-time communication
+      - Hangfire for background processing
+      - Serilog for structured logging
+      - xUnit for testing
+    - **Frontend**: 
+      - Angular 19
+      - TypeScript 5.0+
+      - NgRx for state management
+      - RxJS for async operations
+      - Angular Material or PrimeNG for UI components
+      - D3.js/Chart.js for visualization
+      - Jasmine/Karma for testing
+    - **Database**:
+      - PostgreSQL 14+
+      - Redis for caching
+    - **Infrastructure**:
+      - Docker and Docker Compose
+      - GitHub Actions for CI/CD
+      - Application Insights for monitoring
+
+34. **Library Versioning**: Pin library versions in package.json and .csproj files to ensure consistent builds. Update libraries according to the established update schedule and security policy.
+
+35. **Project Structure**: Follow this structured organization within the monorepo:
+    ```
+    .cursor/rules/        // Cursor AI rules
+    backend/              // Backend code folder
+      └── src/            // Source code
+        ├── TestMaster.Api/                // Main API entry point
+        ├── TestMaster.Core/               // Core business logic and domain models
+        │   ├── Common/                    // Shared utilities and helpers
+        │   ├── TestManagement/            // Test management module
+        │   ├── UserManagement/            // User management module
+        │   ├── Execution/                 // Execution module
+        │   ├── Reporting/                 // Reporting module
+        │   ├── AIIntegration/             // AI integration module 
+        │   └── TestPlanHierarchy/         // Test plan hierarchy module
+        ├── TestMaster.Infrastructure/     // Data access and external services
+        │   ├── Data/                      // Database context and migrations
+        │   ├── Repositories/              // Repository implementations
+        │   ├── Services/                  // External service integrations
+        │   ├── Messaging/                 // Message broker implementation
+        │   └── Security/                  // Authentication and authorization
+        └── TestMaster.Tests/              // Test projects
+           ├── UnitTests/                  // Unit tests
+           ├── IntegrationTests/           // Integration tests
+           └── E2ETests/                   // End-to-end tests
+    frontend/             // Frontend code folder
+      └── src/
+        ├── app/
+        │   ├── core/                      // Core functionality
+        │   │   ├── auth/                  // Authentication 
+        │   │   ├── http/                  // HTTP interceptors
+        │   │   ├── guards/                // Route guards
+        │   │   ├── models/                // Data models
+        │   │   └── store/                 // NgRx store root
+        │   ├── shared/                    // Shared components & utilities
+        │   ├── features/                  // Feature modules
+        │   │   ├── dashboard/             // Dashboard feature
+        │   │   ├── projects/              // Projects management
+        │   │   ├── test-suites/           // Test Suites management
+        │   │   ├── test-cases/            // Test Cases management
+        │   │   ├── test-plans/            // Test Plans management
+        │   │   ├── executions/            // Test Executions
+        │   │   ├── reports/               // Reports & analytics
+        │   │   └── ai-integration/        // AI Integration features
+        │   └── layouts/                   // Layout components
+        └── assets/                        // Static assets
+    README.md             // Project documentation
+    docker-compose.yml    // Docker Compose configuration
+    .github/             // GitHub Actions workflow definitions
+    docs/                // Additional documentation
+    ```
+
+36. **Module Organization**: Organize code within each module using Clean Architecture principles with clear separation of:
+    - Domain models (entities, value objects)
+    - Application services (use cases)
+    - Infrastructure concerns (repositories, external services)
+    - Presentation/API interfaces
+
+37. **File Naming**: Follow consistent file naming conventions:
+    - Backend: `EntityName.cs`, `EntityNameService.cs`, `EntityNameController.cs`
+    - Frontend: `feature-name.component.ts`, `feature-name.service.ts`, `feature-name.actions.ts`
+
+38. **Dependency Management**: Centralize common dependencies in shared projects/packages:
+    - Backend: Use a shared Core library for domain objects used across modules
+    - Frontend: Use a shared models library for TypeScript interfaces used across features
+
+39. **Consistency in API Structure**: Organize API endpoints consistently across modules:
+    - RESTful design
+    - Versioned endpoints (`/api/v1/resource`)
+    - Controller-per-resource pattern
+
+40. **Testing Structure**: Maintain parallel testing structure matching the source code organization:
+    - Tests should mirror the structure of the code they test
+    - Each module should have corresponding unit, integration, and E2E tests
