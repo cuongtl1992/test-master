@@ -1,199 +1,516 @@
-# Chi tiết triển khai dự án TestMaster - Hướng dẫn từng bước
+# Chi tiết triển khai dự án TestMaster
 
-Dựa trên tài liệu PRD và giải pháp kỹ thuật, sau đây là kế hoạch triển khai chi tiết dự án TestMaster, bao gồm các bước thực hiện cụ thể và prompt cho Cursor AI IDE để hỗ trợ việc triển khai.
+Dựa vào mô tả yêu cầu sản phẩm và giải pháp kỹ thuật, tôi sẽ trình bày kế hoạch triển khai chi tiết cho dự án TestMaster, bao gồm các bước thực hiện và các prompt để sử dụng Cursor AI IDE.
 
-## 1. Chuẩn bị cơ sở hạ tầng và môi trường phát triển
+## 1. Thiết lập cơ sở hạ tầng và framework
 
-### 1.1 Thiết lập dự án .NET Core và Angular
+### 1.1 Tạo cấu trúc dự án và solution
 
-**Prompt cho Cursor:** "Tạo cấu trúc dự án .NET Core microservices theo kiến trúc đã định nghĩa trong tài liệu kỹ thuật của TestMaster, bao gồm API Gateway và 6 microservices: Test Management, User Management, Execution, Reporting, AI Integration, và Test Plan Hierarchy."
+**Prompt cho Cursor:**
+```
+Tạo cấu trúc dự án .NET 8 cho hệ thống TestMaster theo mô hình monolithic với các module riêng biệt: TestManagement, UserManagement, Execution, Reporting, AIIntegration, và TestPlanHierarchy. Cấu trúc bao gồm các dự án sau:
+1. TestMaster.Api - Web API chính
+2. TestMaster.Core - Các domain models, interfaces và business logic
+3. TestMaster.Infrastructure - Repositories, external services và data access
+4. TestMaster.Tests - Unit tests và integration tests
 
-### 1.2 Thiết lập Docker và Docker Compose
+Đảm bảo tuân thủ Clean Architecture và mô hình CQRS với MediatR. Tạo các thư mục con trong Core cho từng module nghiệp vụ.
+```
 
-**Prompt cho Cursor:** "Viết các Dockerfile cho .NET Core microservices và Angular frontend, cùng với docker-compose.yml để cấu hình các services và dependencies như PostgreSQL, Redis, và RabbitMQ cho dự án TestMaster."
+### 1.2 Thiết lập cấu trúc database với Entity Framework Core
 
-### 1.3 Cấu hình CI/CD với GitHub Actions
+**Prompt cho Cursor:**
+```
+Tạo các entity model classes cho TestMaster trong thư mục TestMaster.Core/Entities theo mô hình ERD trong giải pháp kỹ thuật. Bao gồm các entity: User, Project, TestSuite, TestCase, TestCase​Version, Requirement, TestPlan, TestPlanHierarchy, Build, Execution, Attachment, AiConfig, AiHistory, Sprint, và Release.
 
-**Prompt cho Cursor:** "Tạo các workflow files cho GitHub Actions để thiết lập CI/CD pipeline cho dự án TestMaster, bao gồm build, test, và deployment tự động cho môi trường dev và production."
+Sau đó, tạo DbContext class trong TestMaster.Infrastructure/Data với các DbSet cho mỗi entity và cấu hình relationship giữa các entity. Đảm bảo áp dụng các index, constraint và các best practice của Entity Framework Core 8.0.
+```
 
-## 2. Thiết kế và triển khai Database
+### 1.3 Thiết lập ứng dụng Angular 19 cho frontend
 
-### 2.1 Tạo Entity Data Models và DbContext
+**Prompt cho Cursor:**
+```
+Tạo cấu trúc ứng dụng Angular 19 cho frontend của TestMaster với các modules sau:
+1. Core module - Chứa các services, guards, và interceptors cơ bản
+2. Shared module - Chứa các components, directives, và pipes dùng chung
+3. Feature modules - Các module tính năng (dashboard, projects, test-suites, test-cases, test-plans, executions, reports, ai-integration)
+4. Layout module - Các components layout
 
-**Prompt cho Cursor:** "Tạo các entity model classes và DbContext sử dụng Entity Framework Core theo mô hình ERD trong tài liệu kỹ thuật của TestMaster, gồm Users, Projects, TestSuites, TestCases, TestPlans, Executions và các entity liên quan."
+Thiết lập routing với lazy loading cho các feature modules, cấu hình NgRx store cho state management, và thiết lập Angular Material hoặc PrimeNG cho UI components.
+```
 
-### 2.2 Implement Database Migrations
+### 1.4 Cấu hình Docker và Docker Compose
 
-**Prompt cho Cursor:** "Viết các migration scripts cho Entity Framework Core để khởi tạo và cập nhật schema database PostgreSQL cho TestMaster, bao gồm các bảng, relationship, index, và dữ liệu seed ban đầu."
+**Prompt cho Cursor:**
+```
+Tạo Dockerfile cho backend .NET 8 và frontend Angular 19, cùng với docker-compose.yml để thiết lập môi trường development. Docker Compose cần bao gồm:
+1. SQL Server hoặc PostgreSQL container
+2. Redis container cho caching
+3. Backend API container
+4. Frontend container
+5. Network configuration để các containers có thể giao tiếp với nhau
 
-### 2.3 Cấu hình Redis Cache
+Đảm bảo sử dụng multi-stage builds cho .NET và Angular để tối ưu kích thước images.
+```
 
-**Prompt cho Cursor:** "Tạo service để cấu hình và quản lý Redis cache trong dự án TestMaster, với các method GetOrCreateAsync, SetAsync, RemoveAsync, và RemoveByPatternAsync theo implementation trong tài liệu kỹ thuật."
+## 2. Phát triển Core Domain và Entities
 
-## 3. Phát triển Microservices
+### 2.1 Implement các domain models và interfaces
 
-### 3.1 Xây dựng API Gateway
+**Prompt cho Cursor:**
+```
+Implement các domain models và interfaces chính trong TestMaster.Core:
 
-**Prompt cho Cursor:** "Implement API Gateway sử dụng YARP (Yet Another Reverse Proxy) trên .NET Core với cấu hình routing, authentication, rate limiting, và circuit breaking cho microservices của TestMaster."
+1. Tạo các interfaces như ITestCaseRepository, ITestSuiteRepository, ITestPlanRepository, ... trong thư mục Core/Interfaces
+2. Implement các domain services như TestPlanStatusService, TestCaseVersioningService trong Core/Services
+3. Tạo các value objects như TestCaseStatus, TestPlanStatus, UserRole trong Core/ValueObjects
+4. Implement các domain events như TestCaseCreated, TestExecutionCompleted trong Core/Events
 
-### 3.2 Implement User Management Service
+Đảm bảo tuân thủ Domain-Driven Design principles với rich domain models, separation of concerns, và immutability khi cần thiết.
+```
 
-**Prompt cho Cursor:** "Phát triển User Management Service với các API endpoints cho authentication, authorization, user management và two-factor authentication theo yêu cầu trong PRD của TestMaster."
+### 2.2 Implement CQRS pattern với MediatR
 
-### 3.3 Implement Test Management Service
+**Prompt cho Cursor:**
+```
+Triển khai CQRS pattern với MediatR trong TestMaster.Core. Tạo các thư mục sau trong mỗi module:
 
-**Prompt cho Cursor:** "Tạo Test Management Service với CQRS pattern sử dụng MediatR cho việc quản lý Test Project, Test Suite và Test Case theo thiết kế API trong tài liệu kỹ thuật TestMaster."
+1. /Commands - Chứa các command và command handlers (CreateTestCase, UpdateTestPlan, ...)
+2. /Queries - Chứa các query và query handlers (GetTestCaseById, GetTestPlanHierarchy, ...)
+3. /Validators - Chứa các FluentValidation validators cho mỗi command và query
 
-### 3.4 Implement Test Plan Hierarchy Service
+Implement một command và query cụ thể cho mỗi module như CreateTestCaseCommand, GetTestSuiteByIdQuery, ... với đầy đủ validators và handlers.
+```
 
-**Prompt cho Cursor:** "Phát triển Test Plan Hierarchy Service để quản lý cấu trúc phân cấp Test Plan (Master, Feature, Story, Release) với cơ chế tính toán và cập nhật trạng thái tự động theo yêu cầu của TestMaster."
+### 2.3 Implement cơ chế logging và exception handling
 
-### 3.5 Implement Execution Service
+**Prompt cho Cursor:**
+```
+Triển khai hệ thống logging và exception handling cho TestMaster:
 
-**Prompt cho Cursor:** "Xây dựng Execution Service cho việc thực thi Test Case, ghi nhận kết quả, đính kèm ảnh chụp và ghi chú với các endpoints API mô tả trong tài liệu kỹ thuật của TestMaster."
+1. Tạo custom exception types trong Core/Exceptions (NotFoundException, BusinessRuleException, ...)
+2. Tạo middleware xử lý global exception trong Api/Middleware
+3. Cấu hình Serilog với structured logging format trong Program.cs
+4. Implement logging decorator cho MediatR để tự động log tất cả commands và queries
+5. Tạo ErrorDetails dto cho API responses với các thông tin lỗi chuẩn hóa
 
-### 3.6 Implement Reporting Service
+Đảm bảo các exceptions được xử lý thống nhất và trả về response codes phù hợp (404 cho NotFoundException, 400 cho validation errors, ...)
+```
 
-**Prompt cho Cursor:** "Phát triển Reporting Service với các API endpoints để tạo báo cáo động, dashboard visualization và xuất báo cáo theo các định dạng yêu cầu trong TestMaster PRD."
+## 3. Triển khai Infrastructure và Data Access
 
-### 3.7 Implement AI Integration Service
+### 3.1 Implement các Repository classes
 
-**Prompt cho Cursor:** "Xây dựng AI Integration Service cho việc tích hợp với LLM providers (OpenAI, Anthropic), xử lý document chunking, prompt engineering và chuyển đổi kết quả LLM thành Test Case có cấu trúc theo yêu cầu của TestMaster."
+**Prompt cho Cursor:**
+```
+Implement Repository pattern cho TestMaster.Infrastructure:
 
-## 4. Phát triển Frontend Angular
+1. Tạo BaseRepository class với các phương thức CRUD cơ bản
+2. Implement các concrete repository classes như TestCaseRepository, TestSuiteRepository, TestPlanRepository trong Infrastructure/Repositories
+3. Thêm paging, sorting và filtering cho các repositories
+4. Implement các extension methods cho IQueryable để hỗ trợ paging và filtering
+5. Triển khai unit of work pattern để đảm bảo transaction consistency
 
-### 4.1 Thiết lập Angular Project và Layout
+Đảm bảo sử dụng async/await cho tất cả database operations và implement các indexing strategies để tối ưu hiệu suất.
+```
 
-**Prompt cho Cursor:** "Tạo cấu trúc project Angular 19 với các modules core, shared, features và layouts theo thiết kế frontend trong tài liệu kỹ thuật TestMaster, cấu hình routing và lazy loading."
+### 3.2 Triển khai caching service với Redis
 
-### 4.2 Implement NgRx Store
+**Prompt cho Cursor:**
+```
+Implement caching strategy với Redis cho TestMaster:
 
-**Prompt cho Cursor:** "Thiết lập NgRx store với state management cho các entity chính trong TestMaster: projects, test-suites, test-cases, test-plans, executions và ai-integration, bao gồm actions, reducers, effects và selectors."
+1. Tạo ICacheService interface trong Core/Interfaces
+2. Implement RedisCacheService trong Infrastructure/Services
+3. Thêm các phương thức GetOrCreateAsync, SetAsync, RemoveAsync, và RemoveByPatternAsync
+4. Implement caching decorator cho các queries phổ biến
+5. Tạo cơ chế cache invalidation khi data thay đổi
 
-### 4.3 Phát triển Dashboard Components
+Sử dụng ConnectionMultiplexer để kết nối với Redis và đảm bảo caching được sử dụng một cách strategic cho các read-heavy operations.
+```
 
-**Prompt cho Cursor:** "Tạo các Dashboard Components cho Test Plan phân cấp với biểu đồ sử dụng Chart.js hoặc D3.js để hiển thị trạng thái kiểm thử, phân phối pass/fail và các metrics theo yêu cầu của TestMaster."
+### 3.3 Implement JWT authentication và authorization
 
-### 4.4 Implement Test Plan Hierarchy Components
+**Prompt cho Cursor:**
+```
+Implement JWT authentication và authorization cho TestMaster:
 
-**Prompt cho Cursor:** "Phát triển các components để quản lý và hiển thị cấu trúc phân cấp Test Plan, với các chức năng liên kết, tạo và tổng hợp giữa các cấp Master, Feature, Story và Release Plan."
+1. Tạo AuthService trong Infrastructure/Security
+2. Implement JWT token generation với claims dựa trên user roles và permissions
+3. Tạo refresh token mechanism
+4. Implement custom authorization policies và requirements
+5. Cấu hình JWT authentication middleware trong Program.cs
+6. Implement two-factor authentication với TwoFactorService
 
-### 4.5 Implement Test Case Management Components
+Đảm bảo sử dụng secure practices: token expiration, secure storage cho refresh tokens, và validation đầy đủ.
+```
 
-**Prompt cho Cursor:** "Tạo các components cho việc tạo, chỉnh sửa, xem và thực thi Test Case, với form validation, rich text editing và file attachment trong Angular."
+## 4. Triển khai các Core Modules
 
-### 4.6 Implement AI Integration UI
+### 4.1 Implement User Management Module
 
-**Prompt cho Cursor:** "Phát triển giao diện người dùng cho việc tích hợp AI, cho phép upload tài liệu SRS, chọn LLM provider, điều chỉnh cài đặt và xem xét/chỉnh sửa test case được tạo tự động."
+**Prompt cho Cursor:**
+```
+Implement User Management Module cho TestMaster:
 
-## 5. Tích hợp AI và LLM
+1. Tạo các API controllers: UserController, AuthController
+2. Implement các commands: RegisterUser, LoginUser, UpdateUserRole, ResetPassword
+3. Implement các queries: GetUserById, GetUsersByProject, GetUserActivity
+4. Tạo các DTOs: UserDto, UserRegistrationDto, LoginDto, JwtResponseDto
+5. Implement API endpoints cho tất cả CRUD operations
+6. Thêm authorization requirements cho mỗi endpoint
 
-### 5.1 Implement LLM Provider Abstraction Layer
+Đảm bảo validation đầy đủ cho tất cả inputs, sử dụng mã hóa cho passwords, và implement role-based access control.
+```
 
-**Prompt cho Cursor:** "Tạo interface và implementations cho việc tích hợp với các LLM providers khác nhau (OpenAI, Anthropic, Llama) theo thiết kế provider abstraction layer trong tài liệu kỹ thuật TestMaster."
+### 4.2 Implement Test Management Module
 
-### 5.2 Implement Document Processing và Chunking
+**Prompt cho Cursor:**
+```
+Implement Test Management Module cho TestMaster:
 
-**Prompt cho Cursor:** "Phát triển các services để xử lý và phân đoạn tài liệu SRS từ các định dạng DOCX, PDF, Markdown thành các chunks phù hợp để gửi đến LLM theo thuật toán đã mô tả trong tài liệu."
+1. Tạo các API controllers: ProjectController, TestSuiteController, TestCaseController
+2. Implement các commands: CreateProject, CreateTestSuite, CreateTestCase, UpdateTestCase
+3. Implement các queries: GetProjectById, GetTestSuitesByProject, GetTestCasesByTestSuite
+4. Tạo các DTOs: ProjectDto, TestSuiteDto, TestCaseDto, TestCaseVersionDto
+5. Implement chức năng phiên bản hóa TestCase
+6. Implement import/export TestCase với XML và CSV
 
-### 5.3 Implement Prompt Engineering và Templates
+Đảm bảo test cases có thể được tổ chức theo cấu trúc phân cấp và có thể được phiên bản hóa để track changes.
+```
 
-**Prompt cho Cursor:** "Tạo hệ thống quản lý và cung cấp các prompt templates tối ưu cho việc phân tích requirement và tạo test case từ tài liệu SRS theo mẫu trong tài liệu PRD của TestMaster."
+### 4.3 Implement Test Plan Hierarchy Module
 
-### 5.4 Implement Test Case Generation Service
+**Prompt cho Cursor:**
+```
+Implement Test Plan Hierarchy Module cho TestMaster:
 
-**Prompt cho Cursor:** "Phát triển Test Case Generation Service để phân tích requirement, gửi prompt đến LLM, xử lý kết quả và chuyển đổi thành test case có cấu trúc trong hệ thống TestMaster."
+1. Tạo TestPlanController với endpoints để quản lý các loại Test Plan
+2. Implement TestPlanHierarchyService để quản lý cấu trúc phân cấp và relationships
+3. Implement TestPlanStatusService để tính toán và cập nhật trạng thái
+4. Tạo các commands: CreateTestPlan, LinkTestPlans, AssignTestCasesToPlan
+5. Implement các queries: GetTestPlanHierarchy, GetTestPlanStatus, GetTestPlanAssignments
+6. Triển khai cơ chế tự động tổng hợp trạng thái giữa các cấp Test Plan
 
-### 5.5 Implement Data Sanitization
+Đảm bảo các Test Plans có thể được liên kết theo đúng cấu trúc phân cấp Master/Feature/Story/Release và trạng thái được cập nhật tự động.
+```
 
-**Prompt cho Cursor:** "Xây dựng Data Sanitizer Service để xử lý dữ liệu nhạy cảm trước khi gửi đến LLM và đảm bảo tuân thủ các yêu cầu bảo mật theo PRNF-08 trong PRD của TestMaster."
+### 4.4 Implement Execution Module
 
-## 6. Implement Security và Performance
+**Prompt cho Cursor:**
+```
+Implement Execution Module cho TestMaster:
 
-### 6.1 Implement JWT Authentication và Authorization
+1. Tạo ExecutionController với endpoints cho việc thực thi và quản lý kết quả test
+2. Implement ExecutionService để xử lý logic thực thi test cases
+3. Tạo các commands: ExecuteTestCase, UpdateExecutionResult, AttachScreenshot
+4. Implement các queries: GetExecutionById, GetExecutionsByTestPlan, GetExecutionHistory
+5. Thiết kế hệ thống lưu trữ attachments (screenshots, logs)
+6. Implement cơ chế cập nhật tự động kết quả lên các Test Plan cấp cao hơn
 
-**Prompt cho Cursor:** "Phát triển hệ thống authentication và authorization sử dụng JWT tokens với refresh tokens, roles và permissions theo thiết kế trong tài liệu kỹ thuật TestMaster."
+Đảm bảo module hỗ trợ đầy đủ các trạng thái thực thi (Pass/Fail/Blocked) và cho phép đính kèm evidence.
+```
 
-### 6.2 Implement Data Encryption
+### 4.5 Implement Reporting Module
 
-**Prompt cho Cursor:** "Tạo Encryption Service để mã hóa dữ liệu nhạy cảm sử dụng AES theo yêu cầu PRNF-05, với các methods Encrypt và Decrypt như mô tả trong tài liệu kỹ thuật."
+**Prompt cho Cursor:**
+```
+Implement Reporting Module cho TestMaster:
 
-### 6.3 Implement Audit Logging
+1. Tạo ReportController với endpoints cho các loại báo cáo
+2. Implement ReportingService để tạo các báo cáo động
+3. Thiết kế ReportTemplate system cho các loại báo cáo khác nhau
+4. Tạo các queries: GetTestPlanSummary, GetSprintReport, GetReleaseReport
+5. Implement export functionality cho các định dạng PDF, HTML và Excel
+6. Tạo các DTOs cho visualization data (charts, graphs)
 
-**Prompt cho Cursor:** "Xây dựng Audit Log Service để ghi lại tất cả các hoạt động quan trọng trong hệ thống TestMaster theo yêu cầu PRNF-07, với các entity và methods như đã mô tả trong tài liệu kỹ thuật."
+Đảm bảo hệ thống báo cáo cung cấp cả high-level dashboards và detailed reports với khả năng drill-down.
+```
 
-### 6.4 Implement Rate Limiting và Caching
+## 5. Triển khai AI Integration
 
-**Prompt cho Cursor:** "Phát triển middleware cho rate limiting và cơ chế caching để đảm bảo hiệu suất hệ thống theo yêu cầu PRNF-01 và PRNF-02 của TestMaster."
+### 5.1 Implement LLM Provider Integration
 
-### 6.5 Implement API Pagination
+**Prompt cho Cursor:**
+```
+Implement LLM Provider Integration cho TestMaster:
 
-**Prompt cho Cursor:** "Tạo các Filter và Response objects, cùng với extension methods cho repository để hỗ trợ pagination trong các API endpoints của TestMaster."
+1. Tạo ILlmProvider interface trong Core/Interfaces/AI
+2. Implement concrete providers: OpenAiProvider, AnthropicProvider, LlamaProvider
+3. Tạo LlmProviderFactory để instantiate providers phù hợp
+4. Implement các classes như LlmRequest, LlmResponse, LlmRequestOptions
+5. Thiết kế retry mechanism và error handling cho API calls
+6. Tích hợp với Azure Key Vault hoặc giải pháp tương tự để quản lý API keys
 
-## 7. Deployment và DevOps
+Đảm bảo mỗi provider implementation tuân thủ interface chung nhưng xử lý các đặc thù riêng của từng LLM API.
+```
 
-### 7.1 Prepare Kubernetes Deployment Configs
+### 5.2 Implement Document Processing
 
-**Prompt cho Cursor:** "Chuẩn bị các file cấu hình Kubernetes (deployments, services, ingress, config maps, secrets) cho việc triển khai TestMaster trong môi trường production."
+**Prompt cho Cursor:**
+```
+Implement Document Processing cho AI Integration trong TestMaster:
 
-### 7.2 Implement Health Checks
+1. Tạo DocumentProcessor class để xử lý các định dạng SRS khác nhau (DOCX, PDF, Markdown)
+2. Implement document chunking algorithm để chia tài liệu thành các phần phù hợp
+3. Tạo các classes như DocumentChunk, ChunkMetadata để lưu trữ thông tin chunks
+4. Implement DocumentSanitizer để loại bỏ thông tin nhạy cảm trước khi gửi đến LLM
+5. Thiết kế cơ chế xử lý tài liệu dài vượt quá token limits của LLM
 
-**Prompt cho Cursor:** "Xây dựng health checks cho tất cả các microservices và dependencies của TestMaster, bao gồm custom health check cho LLM services như mô tả trong tài liệu kỹ thuật."
+Đảm bảo thuật toán chunking thông minh dựa trên cấu trúc tài liệu (headings, sections) thay vì đơn thuần chia theo số tokens.
+```
 
-### 7.3 Implement Database Backup và Recovery
+### 5.3 Implement Prompt Engineering
 
-**Prompt cho Cursor:** "Tạo scripts và cấu hình để backup PostgreSQL database hàng ngày và phục hồi nhanh trong trường hợp có sự cố theo yêu cầu PRNF-13 và PRNF-14."
+**Prompt cho Cursor:**
+```
+Implement Prompt Engineering system cho TestMaster:
 
-## 8. Monitoring và Logging
+1. Tạo PromptTemplateRepository để quản lý các mẫu prompt
+2. Implement các prompt templates cho phân tích requirement và tạo test case
+3. Tạo PromptRenderer service để customize prompts với contextual data
+4. Thiết kế PromptEvaluator để đánh giá chất lượng kết quả từ LLM
+5. Implement cơ chế để người dùng có thể tùy chỉnh prompt templates
 
-### 8.1 Implement Application Insights Integration
+Đảm bảo prompt templates được stored trong database và có thể được version controlled để cải tiến dần dần.
+```
 
-**Prompt cho Cursor:** "Cấu hình và tích hợp Application Insights cho việc monitoring và telemetry của TestMaster, với custom telemetry initializer như đã mô tả trong tài liệu kỹ thuật."
+### 5.4 Implement Test Case Generation
 
-### 8.2 Implement Structured Logging với Serilog
+**Prompt cho Cursor:**
+```
+Implement Test Case Generation Service cho TestMaster:
 
-**Prompt cho Cursor:** "Thiết lập Serilog với các sinks cho Console, Elasticsearch, và Application Insights cho việc structured logging trong TestMaster theo cấu hình trong tài liệu kỹ thuật."
+1. Tạo TestCaseGenerationService để điều phối quá trình phân tích SRS và tạo test cases
+2. Implement requirement extraction logic từ SRS chunks
+3. Tạo TestCaseGenerator để chuyển đổi kết quả LLM thành test cases có cấu trúc
+4. Implement parsers cho các output formats khác nhau từ LLM
+5. Tạo cơ chế liên kết test cases với requirements
+6. Thiết kế user interface để xem xét và chỉnh sửa test cases được tạo tự động
 
-### 8.3 Set up Grafana và Prometheus Dashboards
+Đảm bảo service có thể xử lý tài liệu SRS lớn, với bảo mật dữ liệu và khả năng đánh giá chất lượng test cases tạo ra.
+```
 
-**Prompt cho Cursor:** "Cấu hình Grafana và Prometheus để monitoring các metrics quan trọng của TestMaster như performance, error rates, và LLM response times."
+## 6. Phát triển Frontend Angular
 
-## 9. Testing
+### 6.1 Implement Authentication và Layout
 
-### 9.1 Implement Unit Tests
+**Prompt cho Cursor:**
+```
+Implement Authentication và Layout components cho Angular frontend:
 
-**Prompt cho Cursor:** "Viết unit tests cho các services và components chính trong TestMaster sử dụng xUnit cho backend và Jasmine/Karma cho Angular frontend."
+1. Tạo AuthModule với login, register, và reset password components
+2. Implement JWT authentication service với interceptor
+3. Tạo MainLayout component với responsive sidebar, header và footer
+4. Implement các route guards để bảo vệ routes
+5. Tạo theme service cho light/dark mode
+6. Implement language switching với ngx-translate
 
-### 9.2 Implement Integration Tests
+Đảm bảo layout responsive trên tất cả device sizes và authentication flow an toàn với refresh token, session timeout và secure storage.
+```
 
-**Prompt cho Cursor:** "Phát triển integration tests cho các API endpoints và database operations trong các microservices của TestMaster."
+### 6.2 Implement Project và Test Suite Management
 
-### 9.3 Implement End-to-End Tests
+**Prompt cho Cursor:**
+```
+Implement Project và Test Suite Management UI cho TestMaster:
 
-**Prompt cho Cursor:** "Tạo end-to-end tests cho các luồng chính trong TestMaster như quản lý test plan phân cấp và tạo test case tự động từ SRS sử dụng Cypress hoặc Playwright."
+1. Tạo ProjectsModule với components cho listing, creating, editing projects
+2. Implement TestSuitesModule với tree view cho cấu trúc phân cấp test suites
+3. Thiết kế drag-and-drop interface để tổ chức test suites
+4. Implement các smart và presentational components tuân thủ container/presentation pattern
+5. Tạo các NgRx actions, reducers, effects và selectors cho projects và test suites
+6. Implement permission-based UI rendering dựa trên user roles
 
-### 9.4 Implement Performance Tests
+Đảm bảo interface trực quan, với các visual cues cho trạng thái và interactive tree view cho test suite hierarchy.
+```
 
-**Prompt cho Cursor:** "Thiết lập performance tests sử dụng JMeter hoặc k6 để đảm bảo TestMaster đáp ứng các yêu cầu về hiệu suất trong PRD."
+### 6.3 Implement Test Case Management
 
-## 10. Hoàn thiện và Deployment
+**Prompt cho Cursor:**
+```
+Implement Test Case Management UI cho TestMaster:
 
-### 10.1 Prepare Production Environment
+1. Tạo TestCaseModule với components cho listing, creating, editing, versioning test cases
+2. Implement rich text editor cho test steps và expected results
+3. Tạo version comparison view để so sánh giữa các phiên bản test case
+4. Implement import/export UI cho test cases
+5. Thiết kế search và filter interface
+6. Tạo các NgRx actions, reducers, effects và selectors cho test cases
 
-**Prompt cho Cursor:** "Chuẩn bị môi trường production cho TestMaster với Azure Kubernetes Service hoặc AWS EKS, bao gồm cấu hình network, security groups, và load balancers."
+Đảm bảo UI dễ sử dụng với form validation, auto-save drafts, và historical views cho test case versions.
+```
 
-### 10.2 Configure SSL và TLS
+### 6.4 Implement Test Plan Hierarchy
 
-**Prompt cho Cursor:** "Cấu hình SSL certificates và TLS cho các endpoints của TestMaster sử dụng Let's Encrypt và cert-manager trong Kubernetes."
+**Prompt cho Cursor:**
+```
+Implement Test Plan Hierarchy UI cho TestMaster:
 
-### 10.3 Implement Rollout Strategy
+1. Tạo TestPlanModule với components cho quản lý các loại test plans
+2. Implement hierarchical view để hiển thị cấu trúc Master/Feature/Story/Release
+3. Thiết kế interface để liên kết giữa các test plans
+4. Tạo dashboard visualization cho test plan status với summary cards và progress charts
+5. Implement assignment interface để phân công test cases cho testers
+6. Tạo các NgRx actions, reducers, effects và selectors cho test plan hierarchy
 
-**Prompt cho Cursor:** "Phát triển strategy cho blue-green deployment hoặc canary releases để đảm bảo zero-downtime deployment cho TestMaster."
+Đảm bảo UI hiển thị relationships rõ ràng giữa các cấp test plan và tự động cập nhật trạng thái.
+```
 
-### 10.4 Create User Documentation
+### 6.5 Implement Execution Interface
 
-**Prompt cho Cursor:** "Tạo comprehensive documentation cho người dùng TestMaster, bao gồm hướng dẫn sử dụng các tính năng chính và best practices."
+**Prompt cho Cursor:**
+```
+Implement Test Execution UI cho TestMaster:
 
-### 10.5 Complete Admin Documentation
+1. Tạo ExecutionModule với components cho execution workflow
+2. Implement step-by-step test execution interface
+3. Thiết kế UI để ghi nhận kết quả và đính kèm evidence
+4. Tạo interface để view execution history và compare results
+5. Implement real-time updates với SignalR cho collaborative testing
+6. Tạo các NgRx actions, reducers, effects và selectors cho test execution
 
-**Prompt cho Cursor:** "Viết tài liệu hướng dẫn cho admin về việc cài đặt, cấu hình, monitoring và troubleshooting hệ thống TestMaster."
+Đảm bảo interface tối ưu cho việc thực thi test cases nhanh chóng với keyboard shortcuts và bulk operations.
+```
+
+### 6.6 Implement AI Integration UI
+
+**Prompt cho Cursor:**
+```
+Implement AI Integration UI cho TestMaster:
+
+1. Tạo AiIntegrationModule với components cho tương tác với LLM
+2. Implement file upload interface cho tài liệu SRS
+3. Thiết kế configuration UI để chọn LLM provider và điều chỉnh các settings
+4. Tạo visualization cho quá trình phân tích tài liệu và tạo test cases
+5. Implement review và edit interface cho test cases được tạo tự động
+6. Tạo dashboard hiển thị metrics về AI performance
+
+Đảm bảo UI trực quan hóa quá trình AI processing và cho phép user control trong từng bước của quá trình.
+```
+
+## 7. Triển khai Monitoring và DevOps
+
+### 7.1 Implement Health Checks
+
+**Prompt cho Cursor:**
+```
+Implement Health Checks cho TestMaster backend:
+
+1. Tạo health checks cho tất cả critical dependencies (database, Redis, LLM services)
+2. Implement custom health check cho LlmHealthCheck
+3. Tạo HealthController với endpoints cho liveness và readiness probes
+4. Cấu hình health checks UI để monitoring health status
+5. Implement time-based checks cho các external services
+6. Thiết lập alerting khi health checks fail
+
+Đảm bảo health checks cung cấp đủ thông tin để troubleshoot issues nhưng không expose sensitive information.
+```
+
+### 7.2 Implement Application Monitoring
+
+**Prompt cho Cursor:**
+```
+Implement Application Monitoring cho TestMaster:
+
+1. Cấu hình Application Insights cho backend monitoring
+2. Implement custom TelemetryInitializer để enrich telemetry data
+3. Tạo các custom metrics cho business processes quan trọng
+4. Thiết lập performance counters
+5. Implement distributed tracing qua các services
+6. Cấu hình alerting rules dựa trên performance metrics và error rates
+
+Đảm bảo monitoring bao gồm cả technical metrics (response time, error rate) và business metrics (test case creation rate, execution success rate).
+```
+
+### 7.3 Implement CI/CD Pipeline
+
+**Prompt cho Cursor:**
+```
+Implement CI/CD Pipeline cho TestMaster sử dụng GitHub Actions:
+
+1. Tạo workflow cho CI với build, test và code analysis
+2. Implement CD workflow cho automatic deployment
+3. Cấu hình database migrations automation
+4. Thiết lập environment-specific configurations
+5. Implement smoke tests sau deployment
+6. Thiết kế blue-green deployment strategy
+
+Đảm bảo pipeline có security scanning, SonarQube integration và automatic rollback khi tests fail.
+```
+
+## 8. Rules cho Cursor AI IDE
+
+Dưới đây là bộ rules để đảm bảo Cursor AI IDE implement chính xác từng tác vụ:
+
+```yaml
+# TestMaster Project Rules
+
+## Architecture Rules
+1. Tuân thủ Clean Architecture với Core, Application, Infrastructure và Presentation layers.
+2. Implement CQRS pattern với commands và queries riêng biệt. 
+3. Áp dụng Domain-Driven Design cho core business logic.
+4. Tất cả database operations phải async/await.
+5. Tất cả API controllers phải tuân thủ RESTful design.
+6. Các modules phải tách biệt và communicate thông qua well-defined interfaces.
+
+## Coding Standards
+1. Sử dụng PascalCase cho classes, interfaces, properties, public methods.
+2. Sử dụng camelCase cho variables, parameters và private fields.
+3. Thêm XML documentation cho tất cả public APIs.
+4. Sử dụng nullable reference types và proper null checking.
+5. Group imports theo namespace.
+6. Đặt tên rõ ràng, descriptive và theo business concepts.
+
+## Error Handling
+1. Tất cả external calls (database, API, filesystem) phải trong try/catch blocks.
+2. Sử dụng custom exception types cho business rules.
+3. Log tất cả exceptions với context đầy đủ.
+4. Không returning exceptions, chỉ return appropriate status codes và error messages.
+5. Implement global exception handler.
+
+## Security
+1. Sanitize tất cả user inputs.
+2. Encrypt sensitive data và không store passwords dưới dạng plain text.
+3. Implement proper authentication và authorization.
+4. Không expose sensitive information trong logs, error messages hay API responses.
+5. Implement Rate Limiting cho tất cả public APIs.
+
+## Performance
+1. Implement caching cho read-heavy operations.
+2. Sử dụng pagination cho tất cả collection returns.
+3. Index tất cả columns được sử dụng trong queries.
+4. Tránh N+1 query problem bằng proper eager loading.
+5. Minimize số lượng DB round trips.
+
+## Testing
+1. Viết unit tests cho tất cả commands và queries.
+2. Mock tất cả external dependencies trong unit tests.
+3. Implement integration tests cho repositories và API endpoints.
+4. Đạt ít nhất 80% code coverage cho core business logic.
+5. Sử dụng test doubles (mocks, stubs) một cách appropriate.
+
+## Frontend
+1. Tuân thủ container/presentation component pattern.
+2. Implement proper state management với NgRx.
+3. Lazy load tất cả feature modules.
+4. Sử dụng TypeScript interfaces cho tất cả data models.
+5. Implement proper form validation.
+6. Áp dụng responsive design principles.
+
+## AI Integration
+1. Sanitize tất cả nội dung trước khi gửi đến LLM.
+2. Implement timeout và retry logic cho LLM API calls.
+3. Store LLM API keys trong secure storage (Key Vault).
+4. Validate và sanitize LLM responses trước khi processing.
+5. Implement fallback mechanisms khi LLM unavailable.
+
+## DevOps
+1. Tất cả environment-specific configurations phải trong environment variables.
+2. Implement health checks cho tất cả services và dependencies.
+3. Containerize application với Docker.
+4. Implement automated database migrations.
+5. Thiết lập monitoring cho tất cả critical paths.
+```
+
+Bằng cách tuân thủ kế hoạch triển khai chi tiết này và các rules cho Cursor AI IDE, bạn sẽ có thể implement dự án TestMaster một cách có hệ thống và đạt được kết quả production-ready.
