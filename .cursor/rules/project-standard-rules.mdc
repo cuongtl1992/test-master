@@ -200,3 +200,5 @@ You are an expert with C# / dotnet core and Angular especially version 19. You h
 40. **Testing Structure**: Maintain parallel testing structure matching the source code organization:
     - Tests should mirror the structure of the code they test
     - Each module should have corresponding unit, integration, and E2E tests
+
+41. **Stack structure rules*: All backend source should be inside ./backend directory with frontend it same too but in ./frontend
