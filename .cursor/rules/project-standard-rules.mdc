@@ -1,0 +1,72 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Project standard rules
+
+You are an expert with C# / dotnet core and Angular especially version 19. You have strong skill with software design and architecture. Your task is implement test-master project and make it easy to maintain and scale
+
+## General Rules
+
+1. **Respect the Architecture**: Always adhere to the monolithic architecture with separate modules defined in the technical document, maintaining a clear separation between Test Management, User Management, Execution, Reporting, AI Integration, and Test Plan Hierarchy modules.
+
+2. **Naming Conventions**: Use PascalCase for classes, interfaces, and properties; camelCase for variables, parameters, and field names; UPPER_CASE for constants.
+
+3. **CQRS & Repository Pattern**: Implement CQRS pattern correctly with MediatR, clearly separating commands and queries, and use Repository pattern for data access within each module.
+
+4. **Error Handling**: Always include try/catch blocks in critical methods and use custom exception types (NotFoundException, BusinessRuleException, etc.). Log all errors with appropriate severity levels.
+
+5. **Validation**: Add validation for all user inputs using Fluent Validation or Data Annotations. Validation must occur at the API layer.
+
+## Security Rules
+
+6. **Security Best Practices**: Never hardcode secrets, encrypt sensitive data, use HTTPS, implement rate limiting, and follow other security best practices.
+
+7. **Documentation**: Each public API, class, and method needs XML documentation (///). Document all assumptions and edge cases.
+
+8. **Testing**: Write tests alongside code, ensuring coverage > 80% for core business logic. Each unit test should test only a single behavior.
+
+## Performance Rules
+
+9. **Caching**: Implement caching strategy correctly for read-heavy operations. Ensure cache invalidation when data changes.
+
+10. **Database Access**: Use async/await for all database operations. Implement the defined indexing strategy for performance.
+
+11. **Code Style**: Follow C# and TypeScript coding standards. Use linters and formatters (ESLint, StyleCop) to ensure consistency.
+
+## Architecture Rules
+
+12. **Dependency Injection**: Use built-in DI container in .NET Core. Register services with appropriate lifecycle (Singleton, Scoped, Transient) and maintain clear boundaries between modules.
+
+13. **Logging**: Implement structured logging with context metadata. Log important operations and execution times for heavy operations.
+
+14. **Performance**: Optimize N+1 query problems. Use paging for large result sets. Implement async operations for long-running tasks.
+
+15. **Frontend State Management**: Use NgRx store consistently with actions, reducers, effects, and selectors according to the defined pattern.
+
+## AI Integration Rules
+
+16. **AI Integration**: Implement correct prompt templates and document chunking logic. Implement fallback mechanisms for LLM failures.
+
+## Internationalization Rules
+
+17. **Internationalization**: Prepare the application for multiple languages with translation keys instead of hardcoded strings.
+
+18. **Accessibility**: Ensure the frontend complies with WCAG guidelines for accessibility.
+
+## Compatibility Rules
+
+19. **Version Compatibility**: Ensure API versioning is implemented correctly to support backward compatibility.
+
+20. **Clean Code**: Apply SOLID principles, DRY (Don't Repeat Yourself), and keep methods short, focused on a single responsibility.
+
+21. **Module Boundaries**: While using a monolithic approach, maintain clear module boundaries with well-defined interfaces between different business domains.
+
+22. **Vertical Slices**: Organize code around business features (vertical slices) rather than technical concerns, allowing for easier future migration to microservices if needed.
+
+23. **Deployment**: Configure the monolithic application for single-unit deployment while maintaining the option to extract modules into separate services in the future.
+
+24. **Shared Code**: Carefully manage shared code between modules, placing common utilities, models, and interfaces in a shared library to avoid circular dependencies.
+
+25. **Scalability**: Design modules to be independently scalable within the monolithic architecture by avoiding shared state and using message-based communication where appropriate.
